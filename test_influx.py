@@ -10,3 +10,6 @@ client = influxdb.InfluxDBClient(HOST, PORT, USERNAME, PASSWORD, DATABASE, ssl=T
 
 result = client.query('SELECT value FROM voc_ppb LIMIT 1;')
 print("Result: {}".format(result))
+
+x = 6
+print(x)
