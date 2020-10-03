@@ -97,12 +97,21 @@ print(warmest_temp)
 print(temperature_df)
 
 
+##############################################################################################
 #Jacob's Brightest Room code
+# Define string values for different measurements
+HUMIDITY = "Humidity_%"
+BRIGHTNESS = "Illumination_lx"
+TEMPERATURE = "Temperature_°C" # temperature doesn't seem to work for me...
+AWAIR = "awair_score"
+CO2 = "co2_ppm"
+VOC = "voc_ppb"
+
 # Define base strings for queries
-data_query_string_base = 'SELECT MEAN(\"value\") FROM "{}" WHERE time > "{}T{}Z" AND time < "{}T{}Z"'
+data_query_string_base = "SELECT MEAN(\"value\") FROM {} WHERE time > '{}T{}Z' AND time < '{}T{}Z' GROUP BY \"location_specific\""
 
 # Define date and observable
-date = "2020-07-22"
+date = "2020-07-02"
 observable = BRIGHTNESS
 
 biggest_value_room = "(empty)"
@@ -110,7 +119,6 @@ biggest_value = 0
 # For each hour
 for i in range(24):
     # Get start and stop time for querying
-    i=1
     time_start_string = "{0:0>2d}:00:00".format(i)
     time_end_string = "{0:0>2d}:59:59".format(i)
     # Construct query string
@@ -127,3 +135,63 @@ for i in range(24):
             biggest_value = value
 
 print("Brightest ({}): {}".format(biggest_value,biggest_value_room))
+##############################################################################################
+
+
+###########Combined code
+
+import numpy as np
+import pandas as pd
+import datetime
+import time
+
+'''
+Plan:
+0. User defines the day; Convert timestamps
+1. Create database with columns of rooms
+2. Get mean value for each hour
+3. Store value chronologically 00 to 24 in each row
+4. Find index of highest value
+5. Index of room
+'''
+
+# Make a list of all rooms with sensors
+rooms_query = client.query('SHOW TAG VALUES FROM "Illumination_lx" WITH KEY = "location_specific"')
+rooms = list(rooms_query.get_points(measurement="Illumination_lx"))
+locations=[]
+for room in rooms:
+    locations.append(room['value'])
+#print((len(locations)))
+
+
+#Pandas dataframe with rooms
+bright_df=pd.DataFrame(columns = locations)
+
+base = "SELECT value,location_specific,description FROM Illumination_lx WHERE time > '{}T{}Z' AND time < '{}T{}Z'"
+day = "2020-07-02"
+
+for i in range(24):
+    # Get start and stop time for querying
+    time_start_string = "{0:0>2d}:00:00".format(i)
+    time_end_string = "{0:0>2d}:59:59".format(i)
+    single_avg_values = []
+    temperature = client.query(base.format(day,time_start_string,day,time_end_string))
+    #For each location
+    for location in locations:
+        t_location = list(temperature.get_points(measurement='Illumination_lx', tags={'location_specific': location} ))
+    # Average all queried temperature values
+        for i in range(len(locations)):
+            values_24h = []
+            for value in t_location:
+                values_24h.append(value['value'])
+            single_avg_value = np.nanmean(values_24h)
+        single_avg_values.append(single_avg_value)
+    zipped = zip(locations,single_avg_values)
+    a_dict = dict(zipped)
+    bright_df = bright_df.append(a_dict, ignore_index=True)
+
+#print(bright_df)
+brightest_temp = bright_df.max(axis=1)
+brightest_room = bright_df.idxmax(axis=1)
+
+print(brightest_temp, brightest_room)
