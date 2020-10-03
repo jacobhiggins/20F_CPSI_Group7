@@ -9,12 +9,6 @@ DATABASE = 'living-link-lab-open'
 
 client = influxdb.InfluxDBClient(HOST, PORT, USERNAME, PASSWORD, DATABASE, ssl=True, verify_ssl=True)
 
-measurements = client.query('SHOW measurements')
-print(measurements)
-
-result = client.query('SELECT value FROM Temperature_°C LIMIT 1;')
-print("Result: {}".format(result))
-
 #0.A
 measurements = client.query('SHOW MEASUREMENTS')
 print(measurements)
@@ -43,18 +37,26 @@ fields.raw
 #Field Values
 values = client.query('SELECT value FROM "Temperature_°C"  LIMIT 1;')
 values.raw
-
-temp_oct2 = client.query('SELECT value,location_specific,description FROM "Temperature_°C" WHERE time > now() - 1d')
-
 #SELECT mean("value") FROM "Temperature_°C" WHERE  time > {} GROUP BY time(6h) ) WHERE time > '2017-01-01' GROUP BY time(24h)
+
 import numpy as np
 import pandas as pd
 import datetime
 import time
 
+'''
+Plan:
+0. User defines the day; Convert timestamps
+1. Create database with columns of rooms
+2. Get mean value for each hour
+3. Store value chronologically 00 to 24 in each row
+4. Find index of highest value
+5. Index of room
+'''
+
 # Create a start and end datetime
 start = "2020-10-01T00:00:00Z"
-end = "2020-10-02T00:00:00Z"
+end = "2020-10-01T00:59:59Z"
 
 # Convert to UTC format (UNIX)
 T1 = time.mktime(datetime.datetime.strptime(start, "%Y-%m-%dT%H:%M:%SZ").timetuple())
@@ -66,17 +68,62 @@ rooms = list(rooms_query.get_points(measurement='Temperature_°C'))
 locations=[]
 for room in rooms:
     locations.append(room['value'])
-print(str(locations[0]))
+print((len(locations)))
+#Pandas dataframe with rooms
+temperature_df=pd.DataFrame(columns = locations)
 
-#Can't call time in between..........
-#How to use GROUP BY query in python?
-temperature = client.query('SELECT value,location_specific,description FROM "Temperature_°C" WHERE time > now() - 1d')
-
+#How to use GROUP BY query in python? Need to get hourlies
+single_avg_values = []
+temperature = client.query('SELECT value,location_specific,description FROM "Temperature_°C" WHERE time > {}'.format(T1))
+#For each location
 for location in locations:
     t_location = list(temperature.get_points(measurement='Temperature_°C', tags={'location_specific': location} ))
-    #Need to average for each hour in 24 hours & compare against each room
-    avg_24h = []
-    for value in t_location:
-        avg_24h.append(value['value'])
-    print(np.nanmean(avg_24h), location)
+   # Average all queried temperature values
+    for i in range(len(locations)):
+        values_24h = []
+        for value in t_location:
+            values_24h.append(value['value'])
+        single_avg_value = np.nanmean(values_24h)
+    single_avg_values.append(single_avg_value)
 
+zipped = zip(locations,single_avg_values)
+a_dict = dict(zipped)
+temperature_df = temperature_df.append(a_dict, ignore_index=True)
+
+warmest_temp = temperature_df.max(axis=1)
+warmest_room = temperature_df.idxmax()
+
+print(warmest_temp)
+print(temperature_df)
+
+
+#Jacob's Brightest Room code
+# Define base strings for queries
+data_query_string_base = 'SELECT MEAN(\"value\") FROM "{}" WHERE time > "{}T{}Z" AND time < "{}T{}Z"'
+
+# Define date and observable
+date = "2020-07-22"
+observable = BRIGHTNESS
+
+biggest_value_room = "(empty)"
+biggest_value = 0
+# For each hour
+for i in range(24):
+    # Get start and stop time for querying
+    i=1
+    time_start_string = "{0:0>2d}:00:00".format(i)
+    time_end_string = "{0:0>2d}:59:59".format(i)
+    # Construct query string
+    query_string = data_query_string_base.format(observable,date,time_start_string,date,time_end_string)
+    # Get mean value for each room for this hour
+    result = client.query(query_string)
+    # Get a list of all results (must do this to get room name with hourly mean)
+    result_list = result.raw["series"]
+    for j in range(len(result_list)):
+        room = result_list[j]["tags"]["location_specific"]
+        value = result_list[j]["values"][0][1]
+        if value > biggest_value:
+            biggest_value_room = room
+            biggest_value = value
+
+print("Brightest ({}): {}".format(biggest_value,biggest_value_room))
