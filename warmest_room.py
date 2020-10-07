@@ -54,7 +54,9 @@ Plan:
 #WARMEST ROOM OF THE DAY IN A SINGLE HOUR (AVERAGED PER HOUR)
 
 # Select the day: YYYY-MM-DD
-day = "2020-07-02"  
+days = ["2020-07-02",
+        "2020-08-02",
+        "2020-09-02"]
 
 # Make a list of all rooms with sensors
 rooms_query = client.query('''SHOW TAG VALUES FROM "Temperature_°C" WITH KEY = "location_specific"''')
@@ -64,42 +66,41 @@ for room in rooms:
     locations.append(room['value'])
 #print((len(locations)))
 
-#Pandas dataframe with rooms
-temperature_df=pd.DataFrame(columns = locations)
-
 #Base query string
 base = '''SELECT value,location_specific,description FROM "Temperature_°C" WHERE time > '{}T{}Z' AND time < '{}T{}Z' '''
 
-for i in range(24):
-    # Get start and stop time for querying
-    time_start_string = "{0:0>2d}:00:00".format(i)
-    time_end_string = "{0:0>2d}:59:59".format(i)
-    single_avg_values = []
-    temperature = client.query(base.format(day,time_start_string,day,time_end_string))
-    #For each location
-    for location in locations:
-        t_location = list(temperature.get_points(measurement="Temperature_°C", tags={'location_specific': location} ))
-    #Average all queried temperature values
-        for i in range(len(locations)):
-            values_24h = []
-            for value in t_location:
-                values_24h.append(value['value'])
-            single_avg_value = np.nanmean(values_24h)
-        single_avg_values.append(single_avg_value)
-    zipped = zip(locations,single_avg_values)
-    a_dict = dict(zipped)
-    temperature_df = temperature_df.append(a_dict, ignore_index=True)
+for day in days:
+    #Pandas dataframe with rooms
+    temperature_df=pd.DataFrame(columns = locations)
+    for i in range(24):
+        # Get start and stop time for querying
+        time_start_string = "{0:0>2d}:00:00".format(i)
+        time_end_string = "{0:0>2d}:59:59".format(i)
+        single_avg_values = []
+        temperature = client.query(base.format(day,time_start_string,day,time_end_string))
+        #For each location
+        for location in locations:
+            t_location = list(temperature.get_points(measurement="Temperature_°C", tags={'location_specific': location} ))
+        #Average all queried temperature values
+            for i in range(len(locations)):
+                values_24h = []
+                for value in t_location:
+                    values_24h.append(value['value'])
+                single_avg_value = np.nanmean(values_24h)
+            single_avg_values.append(single_avg_value)
+        zipped = zip(locations,single_avg_values)
+        a_dict = dict(zipped)
+        temperature_df = temperature_df.append(a_dict, ignore_index=True)
 
-#Find warmest temperature in the day of an hour & its index
-warmest_temp = (temperature_df.max(axis=1)).max()
-warmest_tempid = (temperature_df.max(axis=1)).idxmax()
+    #Find warmest temperature in the day of an hour & its index
+    warmest_temp = (temperature_df.max(axis=1)).max()
+    warmest_tempid = (temperature_df.max(axis=1)).idxmax()
 
-#Find warmest room in the day of an hour with its index
-warmest_room = (temperature_df.idxmax(axis=1))[warmest_tempid]
+    #Find warmest room in the day of an hour with its index
+    warmest_room = (temperature_df.idxmax(axis=1))[warmest_tempid]
 
-#Print answer
-print(warmest_temp, warmest_room)
-
+    #Print answer
+    print(''' {}\n Warmest ({}°C): {}\n\n '''.format(day,warmest_temp,warmest_room))
 
 
 ####################################################################################################################
