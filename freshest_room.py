@@ -19,9 +19,8 @@ date = ["2020-09-18", "2020-09-19", "2020-09-20"]
 
 # repeat for 3 different dates
 for r in range(len(date)):
-    # define dictionaries for mean values and maximum mean values for each room and hour
+    # define dictionaries for mean values 
     awair_mean_values = {}
-    awair_max_values = {}
 
     # repeat for each hour
     for i in range(24):
@@ -42,20 +41,20 @@ for r in range(len(date)):
                 awair_mean_values[result_list[j]["tags"]["location_specific"]] = []
             awair_mean_values[result_list[j]["tags"]["location_specific"]].append(result_list[j]["values"][0][1])
 
-    # append second dictionary (awair_max_values) to only include maximum mean awair values
-    for x in awair_mean_values:
-        awair_max_values[x] = max(awair_mean_values[x])
-
-    # maximum awair value
-    max_room = max(awair_max_values.values())
+    # find maximum awair value
+    max_room = 0
+    for room in awair_mean_values:
+        for i in range(len(awair_mean_values[room])):
+            if awair_mean_values[room][i] > max_room:
+                max_room = awair_mean_values[room][i]
 
     # list of rooms that contain maximum awair value
     rooms = []
-    for room in awair_max_values:
-        if awair_max_values[room] == max_room:
+    for room in awair_mean_values:
+        if max_room in awair_mean_values[room]:
             rooms.append(room)
 
     # print winning value and corresponding rooms
+    print("")
     print(date[r])
     print("Freshest ({}): ".format(max_room), *rooms, sep=", ")
-    print("")
