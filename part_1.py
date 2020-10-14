@@ -30,11 +30,9 @@ data_query_string_base = "SELECT MEAN(\"value\") FROM {} WHERE time > '{}T{}Z' A
 # Define date and observable
 observable = BRIGHTNESS
 
-biggest_value_room = "(empty)"
-biggest_value = 0
-# For each hour
-
 for date in dates:
+    biggest_value_room = "(empty)"
+    biggest_value = 0
     for i in range(24):
         # Get start and stop time for querying
         time_start_string = "{0:0>2d}:00:00".format(i)
