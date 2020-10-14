@@ -56,4 +56,6 @@ for r in range(len(date)):
             rooms.append(room)
 
     # print winning value and corresponding rooms
-    print("Freshest on {} ({}): ".format(date[r], max_room), *rooms, sep=", ")
+    print(date[r])
+    print("Freshest ({}): ".format(max_room), *rooms, sep=", ")
+    print("")
