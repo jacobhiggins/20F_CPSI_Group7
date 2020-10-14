@@ -70,9 +70,3 @@ for r in range(len(date)):
 
     # print winning value and corresponding rooms
     print("Freshest on {} ({}): ".format(date[r], max_room), *rooms, sep=", ")
-
-
-
-
-
-
