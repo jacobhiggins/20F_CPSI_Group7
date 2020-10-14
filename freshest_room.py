@@ -15,11 +15,11 @@ Freshest = "awair_score"
 base_string = "SELECT MEAN(\"value\") FROM {} WHERE time > '{}T{}Z' AND time < '{}T{}Z' GROUP BY \"location_specific\""
 
 # Define dates
-date = ["2020-09-18", "2020-09-19", "2020-09-20"]
+date = ["2020-09-18", "2020-09-19", "2020-05-04"]
 
 # repeat for 3 different dates
 for r in range(len(date)):
-    # define dictionaries for mean values 
+    # define dictionaries for mean values
     awair_mean_values = {}
 
     # repeat for each hour
@@ -37,7 +37,7 @@ for r in range(len(date)):
 
         # append dictionary where dictionary keys are room and dictionary values are mean values
         for j in range(len(result_list)):
-            if i == 0 & j == 0:
+            if result_list[j]["tags"]["location_specific"] not in awair_mean_values:
                 awair_mean_values[result_list[j]["tags"]["location_specific"]] = []
             awair_mean_values[result_list[j]["tags"]["location_specific"]].append(result_list[j]["values"][0][1])
 
