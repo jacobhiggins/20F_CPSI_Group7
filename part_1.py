@@ -10,12 +10,11 @@ DATABASE = 'living-link-lab-open'
 
 client = influxdb.InfluxDBClient(HOST, PORT, USERNAME, PASSWORD, DATABASE, ssl=True, verify_ssl=True)
 
-# !!!Define the date(s) desired to find the coldest room!!!
+#Define dates!
 dates = ["2020-04-03","2020-05-04","2020-07-05"]
 
 
 ################# Brightest (Jacob)
-
 # Define string values for different measurements
 HUMIDITY = "Humidity_%"
 BRIGHTNESS = "Illumination_lx"
@@ -49,21 +48,12 @@ for date in dates:
             if value > biggest_value:
                 biggest_value_room = room
                 biggest_value = value
-
+    print(date)
     print("Brightest ({}): {}".format(biggest_value,biggest_value_room))
 
 
-'''
-# Select the days (YYYY-MM-DD) with user input
-print("Please answer the following prompts (x3) in YYYY-MM-DD format (no quotes required):\n")
-days=[]
-for i in range(3):
-    day = input("Which day would you like to know about? ")
-    days.append(day)
-'''
-
+print("")
 ################# Warmest (Robin)
-
 # Make a list of all rooms with sensors
 rooms_query = client.query('''SHOW TAG VALUES FROM "Temperature_°C" WITH KEY = "location_specific"''')
 rooms = list(rooms_query.get_points(measurement="Temperature_°C"))
@@ -107,24 +97,11 @@ for day in dates:
     warmest_room = (temperature_df.idxmax(axis=1))[warmest_tempid]
 
     #Print answer
-    print('''{}\n Warmest ({}°C): {} at Hour {} UTC\n '''.format(day,warmest_temp,warmest_room,warmest_tempid))
+    print('''{}\nWarmest ({}°C): {} at Hour {} UTC'''.format(day,warmest_temp,warmest_room,warmest_tempid))
 
 
-
+print("")
 ################# Coldest (Spencer)
-
-'''
-# Find and print the name(s) of the measurment(s) availables
-print("")
-print("Measurement Name(s):")
-result = client.query("SHOW MEASUREMENTS")
-result_list = result.raw["series"]
-for i in range(len(result_list[0]["values"])):
-    measurement_list = result_list[0]["values"][i][0]
-    print("{}".format(measurement_list))
-print("")
-'''
-
 # !!!Define the measurement desired!!!
 measurement = "Temperature_°C"
 
@@ -133,7 +110,6 @@ string = "SELECT MEAN(\"value\") FROM \"{}\" WHERE time > '{}T{}Z' AND time < '{
 
 # Calculate and print the desired measurement and output
 for j in range(len(dates)):
-    print(dates[j])
 
     # Initialize the variable to store data
     desired_value = "0"
@@ -168,27 +144,22 @@ for j in range(len(dates)):
                 desired_value = value
 
     # Print the winning value and associated room    
+    print(dates[j])
     print("Coldest ({:.2f}): Room {}".format(desired_value,desired_room))
-    print("")
 
 
-
+print("")
 ################# Freshest (Michael)
-
 # Define measurement desired
 Freshest = "awair_score"
 
 # Define base strings for queries
 base_string = "SELECT MEAN(\"value\") FROM {} WHERE time > '{}T{}Z' AND time < '{}T{}Z' GROUP BY \"location_specific\""
 
-# Define dates
-date = ["2020-04-03", "2020-05-04", "2020-07-05"]
-
 # repeat for 3 different dates
-for r in range(len(date)):
-    # define dictionaries for mean values and maximum mean values for each room and hour
+for r in range(len(dates)):
+    # define dictionaries for mean values
     awair_mean_values = {}
-    awair_max_values = {}
 
     # repeat for each hour
     for i in range(24):
@@ -197,7 +168,7 @@ for r in range(len(date)):
         time_end_string = "{0:0>2d}:59:59".format(i)
 
         # construct query string
-        query_string = base_string.format(Freshest, date[r], time_start_string, date[r], time_end_string)
+        query_string = base_string.format(Freshest, dates[r], time_start_string, dates[r], time_end_string)
 
         # mean values for each room
         result = client.query(query_string)
@@ -205,24 +176,23 @@ for r in range(len(date)):
 
         # append dictionary where dictionary keys are room and dictionary values are mean values
         for j in range(len(result_list)):
-            if i == 0 & j == 0:
+            if result_list[j]["tags"]["location_specific"] not in awair_mean_values:
                 awair_mean_values[result_list[j]["tags"]["location_specific"]] = []
             awair_mean_values[result_list[j]["tags"]["location_specific"]].append(result_list[j]["values"][0][1])
 
-    # append second dictionary (awair_max_values) to only include maximum mean awair values
-    for x in awair_mean_values:
-        awair_max_values[x] = max(awair_mean_values[x])
-
-    # maximum awair value
-    max_room = max(awair_max_values.values())
+    # find maximum awair value
+    max_room = 0
+    for room in awair_mean_values:
+        for i in range(len(awair_mean_values[room])):
+            if awair_mean_values[room][i] > max_room:
+                max_room = awair_mean_values[room][i]
 
     # list of rooms that contain maximum awair value
     rooms = []
-    for room in awair_max_values:
-        if awair_max_values[room] == max_room:
+    for room in awair_mean_values:
+        if max_room in awair_mean_values[room]:
             rooms.append(room)
 
     # print winning value and corresponding rooms
-    print(date[r])
+    print(dates[r])
     print("Freshest ({}): ".format(max_room), *rooms, sep=", ")
-    print("")
