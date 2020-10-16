@@ -1,3 +1,19 @@
+# Author: Jacob Higgins (jdh4je)
+# Assignment A, Part 2
+
+'''
+The following code evaluates what would likely be the "most comfortable room" for a particular user.
+Specifically, the user puts in their ideal temperature and humidity levels.
+Then, the code finds the average temperature and humidity over an entire day for each room available in the dataset.
+The room that is the closest to this ideal temperature/humidity is counted as the "most comfortable room" for that day.
+The code does this for all days in the past year, counting how many times each room is considered "most comfortable."
+Finally, the code calculates the frequency that each room is considered ideal as a percentage of the total counts.
+The code prints out the three highest rooms that are most frequently the most comfortable, for both temperature and humidity.
+
+An extension of this code could be to construct Pareto frontiers, showing how different rooms can maximize comfort in a variety of different ways.
+This code only considers temperature and humidity, but can easily be extended to other observables.
+'''
+
 import influxdb
 import numpy as np
 
