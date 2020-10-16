@@ -1,3 +1,25 @@
+'''
+This application is meant to help users figure out which location is most ideal for an indoor plant,
+based on humidity, temperature, brightness, and CO2 levels. The output is fairly basic, with
+just annual averages of the four sensor readings given in a table, and sorted by highest to lowest humidity.
+Based on the plant species, the sorting could be manually changed for the user to identify rooms with the ideal
+variable at question. For example, some plants (e.g. desert plants) do well with low humidity.
+
+As stated in the the following statement that's printed with the application output, a machine learning/classification
+algorithm could better pinpoint the exact room by weighting each variable based on plant species. It may also be
+configured to choose a specific time frame (or account for a longer average window).
+
+Based on https://www.houseplantsexpert.com/indoor-plants-temperature-guide.html,\
+ an indoor plant prefers high humidity, high CO2 levels, and temperatures ranging\
+ between 15 to 24 degrees Celsius. You can consult these annual averages (2019-2020) to\
+ select an ideal location depending on the plant species. Notice that the locations are\
+ ranked by levels of decreasing humidity. You can choose to change the priority at the bottom of the code.\
+ The locations are approximated and then averaged for estimating natural light. An improved\
+ application would take account of more light level sensors at their "true" locations.\
+ A classification algorithm could also be incorporated to cluster and identify the most suitable\
+ conditions for an input plant species.')
+'''
+
 import influxdb
 import pandas as pd
 import numpy as np
