@@ -49,7 +49,7 @@ for date in dates:
                 biggest_value_room = room
                 biggest_value = value
     print(date)
-    print("Brightest ({}): {}".format(biggest_value,biggest_value_room))
+    print("Brightest ({:.2f}): {}".format(biggest_value,biggest_value_room))
 
 
 print("")
@@ -97,7 +97,7 @@ for day in dates:
     warmest_room = (temperature_df.idxmax(axis=1))[warmest_tempid]
 
     #Print answer
-    print('''{}\nWarmest ({}°C): {} at Hour {} UTC'''.format(day,warmest_temp,warmest_room,warmest_tempid))
+    print('''{}\nWarmest ({:.2f}°C): {} at Hour {} UTC'''.format(day,warmest_temp,warmest_room,warmest_tempid))
 
 
 print("")
@@ -195,4 +195,4 @@ for r in range(len(dates)):
 
     # print winning value and corresponding rooms
     print(dates[r])
-    print("Freshest ({}): ".format(max_room), *rooms, sep=", ")
+    print("Freshest ({:.2f}): ".format(max_room), *rooms, sep=", ")

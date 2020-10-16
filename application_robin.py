@@ -16,9 +16,8 @@ CO2 = "co2_ppm"
 BRIGHTNESS = "Illumination_lx"
 
 ############################################################################################################
-# Find the optimal room for indoor plants, based on a user-defined average. Here, we use an annual average.
+# Find the optimal room for indoor plants, based on an annual average.
 
-# Define time span to average. 
 start_avg='2019-10-16'
 end_avg='2020-10-16'
 
