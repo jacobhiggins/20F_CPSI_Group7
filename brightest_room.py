@@ -17,11 +17,11 @@ CO2 = "co2_ppm"
 VOC = "voc_ppb"
 
 # Define base strings for queries
-data_query_string_base = "SELECT MEAN(\"value\") FROM {} WHERE time > '{}T{}Z' AND time < '{}T{}Z' GROUP BY \"location_specific\""
+data_query_string_base = "SELECT MEAN(\"value\") FROM \"{}\" WHERE time > '{}T{}Z' AND time < '{}T{}Z' GROUP BY \"location_specific\""
 
 # Define date and observable
-date = "2020-07-22"
-observable = BRIGHTNESS
+date = "2019-12-15"
+observable = TEMPERATURE
 
 biggest_value_room = "(empty)"
 biggest_value = 0
@@ -36,6 +36,7 @@ for i in range(24):
     result = client.query(query_string)
     # Get a list of all results (must do this to get room name with hourly mean)
     result_list = result.raw["series"]
+    print(len(result_list))
     for j in range(len(result_list)):
         room = result_list[j]["tags"]["location_specific"]
         value = result_list[j]["values"][0][1]
