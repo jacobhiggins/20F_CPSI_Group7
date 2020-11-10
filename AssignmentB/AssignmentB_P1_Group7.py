@@ -1,4 +1,4 @@
-# from oracle.oracle import Oracle
+from oracle.oracle import Oracle
 from collections import namedtuple
 import numpy as np
 
@@ -18,7 +18,7 @@ class MyOracle(Oracle):
 
 
     def __init__(self):
-        super().__init__(self)
+        super().__init__()
         self.sensor_types = ["motion","door"]
         self.num_sensors = 2
         self.num_rooms = 3
@@ -26,10 +26,10 @@ class MyOracle(Oracle):
         self.ids.append(["050d5e42","00888e93","05083a3c"]) # motion sensor ids
         self.ids.append(["018330f8","01814dd0","1834188"]) # door sensor ids
         self.callbacks = [self.doorCallback,self.motionCallback]
-        self.values = np.zeros([num_rooms,num_sensors]) # sensor values
-        self.times = np.zeros([num_rooms,num_sensors])
+        self.values = np.zeros([self.num_rooms,self.num_sensors]) # sensor values
+        self.times = np.zeros([self.num_rooms,self.num_sensors])
 
-    def receive(self,device_type,room_num):
+    def receive_data(self,device_type,room_num):
         func_num = 0
         ids = 0
         for i in range(len(self.sensor_types)):
@@ -43,8 +43,8 @@ class MyOracle(Oracle):
         super.receive(sensor_id,self.callbacks[i])
 
 x = MyOracle()
-x.receive("door",1)
-x.receive("motion",1)
+x.receive_data("door",1)
+x.receive_data("motion",1)
 print("finished receiving")
 
 
