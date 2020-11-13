@@ -25,19 +25,22 @@ devices = {"c098e5700148":Sensor('power','monitor',0.0,0.0),
 def sensed_callback(msg):
     sensor_id = msg['device_id']
     sensor = devices[sensor_id]
-    sensor = sensor._replace(time_sensed=time.time())
+    
     if sensor.type=='power':
+        if (time.time() - sensor.time_sensed) < 60:
+            return
         sensor = sensor._replace(value = msg["device_data"]["power"])
     elif sensor.type=='motion':
-        sensor = sensor._replace(value = msg["device_data"]["PIR status"])
+        sensor = sensor._replace(value = msg["device_data"]["PIR Status"])
     elif sensor.type=='CO2':
         sensor = sensor._replace(value = msg["device_data"]["Concentration_ppm"])
     elif sensor.type=='temp':
-        sensor = sensor._replace(value = msg["device_data"]["Temperature_Â°C"])
+        sensor = sensor._replace(value = msg["device_data"]["Temperature_°C"])
     elif sensor.type=='contact':
         sensor = sensor._replace(value = msg["device_data"]["Contact"])
+    sensor = sensor._replace(time_sensed=time.time())
     devices[sensor_id] = sensor
-    print("Time: {}\tSensor Type: {}\tDescriptor: {}\tValue: {}".format(
+    print("Time: {} | Sensor Type: {} | Descriptor: {} | Value: {}".format(
         time.asctime( time.localtime(sensor.time_sensed) ),
         sensor.type,
         sensor.description,
