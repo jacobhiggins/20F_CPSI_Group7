@@ -12,7 +12,7 @@ num_sensors = 2
 
 # maximum seconds between door and motion when something is considered "recent"
 # i.e. if the motion sensor was triggered <recent_time> seconds within door sensor, then the two are correlated
-recent_time = 20.0
+recent_time = 20.0*60
 
 ids_dict = {"050d5e42":["motion","257 Olsson"],
             "00888e93":["motion","241 Olsson"],
