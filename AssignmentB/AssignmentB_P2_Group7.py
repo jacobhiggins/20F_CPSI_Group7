@@ -1,12 +1,13 @@
-# fire detection
-# buglar detection
-# power consumption (leaving electronics on, etc.)
+
 
 from oracle.oracle import Oracle
 oracle = Oracle()
 from collections import namedtuple
 import numpy as np
 import time
+
+HOUR_START = 17 # Alarm armed at 5 p.m.
+HOUR_STOP = 7 # Alarm unarmed at 7 a.m.
 
 Sensor = namedtuple('Sensor',['type','description','time_sensed','value'])
 
@@ -50,44 +51,19 @@ def init_callback():
     for sensor_id in devices:
         oracle.receive(sensor_id,sensed_callback)
 
+def buglar_alarm(sensor):
+    local_time = time.localtime(sensor.sensed_time)
+    hour = local_time.hour
+    # If within time that alarm is armed
+    alert = False
+    threat_vector = ""
+    if hour < HOUR_END or hour > HOUR_START:
+        # Check if motion is detected
+        if sensor.type=='motion' and abs(sensor.PIR-1)<0.0001:
+            alert = True
+            threat_vector = "Motion sensed within room."
+        elif sensor.type=='temp':
+            alert = True
+            threat_vector = "Temperature above expected "
+
 init_callback()
-
-# msg = {"device_id":"c098e5700148","device_data":{"power":1.0}}
-# sensed_callback(msg)
-
-# def motion_callback(msg):
-#     sensor_id = msg['device_id']
-#     sensor = devices[sensor_id]
-#     sensor.time_sensed = time.time()
-    
-
-# def CO2_callback(msg):
-#     sensor_id = msg['device_id']
-#     sensor = devices[sensor_id]
-#     sensor.time_sensed = time.time()
-#     sensor.value = msg['device_data']["Concentration_ppm"]
-
-# def contact_callback(msg):
-#     sensor_id = msg['device_id']
-#     sensor = devices[sensor_id]
-#     sensor.time_sensed = time.time()
-#     sensor.value = msg['device_data']['Contact']
-
-# def power_callback(msg):
-#     sensor_id = msg['device_id']
-#     sensor = devices[sensor_id]
-#     sensor.time_sensed = time.time()
-#     sensor.value = msg['device_data']['power']
-
-# # Room 241 = Brad Campbell's Office
-# devices = {"c098e5700148":["power","monitor"],
-#         "c098e5700149":["power","desktop",],
-#         "c098e570015c":["power","Mac charger"],
-#         "c098e5700244":["power","black-white printer"],
-#         "00888e93":["motion","near door"],
-#         "050d69ce":["motion","on ceiling"],
-#         "018984f9":["CO2","north wall"],
-#         "018a33c5":["Temp&Humidity","near door"],
-#         "01814dd0":["contact","on door"],
-#         "018342dc":["contact","on window"]}
-
