@@ -8,6 +8,8 @@ import time
 
 HOUR_START = 17 # Alarm armed at 5 p.m.
 HOUR_STOP = 7 # Alarm unarmed at 7 a.m.
+NORMAL_NIGHT_TEMP = 19
+NORMAL_NIGHT_CO2 = 
 
 Sensor = namedtuple('Sensor',['type','description','time_sensed','value'])
 
