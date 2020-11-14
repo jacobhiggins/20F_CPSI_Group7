@@ -13,6 +13,11 @@ NORMAL_NIGHT_CO2 = 60
 
 Sensor = namedtuple('Sensor',['type','description','time_sensed','value'])
 
+# power used by indivdual things [monitor, desktop, mac charger, printer]
+power_usage = [0,0,0,0]
+# total power usage of all 4 combined
+total_power = 0
+
 # Room 241 = Brad Campbell's Office
 devices = {"c098e5700148":Sensor('power','monitor',0.0,0.0),
         "c098e5700149":Sensor('power','desktop',0.0,0.0),
