@@ -51,19 +51,42 @@ def init_callback():
     for sensor_id in devices:
         oracle.receive(sensor_id,sensed_callback)
 
-def buglar_alarm(sensor):
-    local_time = time.localtime(sensor.sensed_time)
+def buglar_alarm():
+    local_time = time.localtime(time.time())
     hour = local_time.hour
-    # If within time that alarm is armed
-    alert = False
-    threat_vector = ""
+    # If within time that the 
     if hour < HOUR_END or hour > HOUR_START:
+        attack_vectors = []
+        attack_times = []
         # Check if motion is detected
-        if sensor.type=='motion' and abs(sensor.PIR-1)<0.0001:
-            alert = True
-            threat_vector = "Motion sensed within room."
-        elif sensor.type=='temp':
-            alert = True
-            threat_vector = "Temperature above expected "
+        for sensor_id in devices:
+            sensor = devices[sensor_id]
+            if sensor.type=='motion' and abs(sensor.value-1)<0.0001:
+                alert = True
+                threat_vector = "Motion sensed within room."
+                attack_vectors.append(threat_vector)
+                attack_times.append(sensor.time_sensed)
+            elif sensor.type=='temp' and sensor.value > NORMAL_NIGHT_TEMP:
+                alert = True
+                threat_vector = "Temperature above normal value."
+                attack_vectors.append(threat_vector)
+                attack_times.append(sensor.time_sensed)
+            elif sensor.type=='contact' and abs(sensor.value)<0.001:
+                alert = True
+                threat_vector = "Contact was released for sensor {}.".format(sensor.description)
+                attack_vectors.append(threat_vector)
+                attack_times.append(sensor.time_sensed)
+            elif sensor.type=='CO2' and sensor_value > NORMAL_NIGHT_CO2:
+                alert = True
+                threat_vector = "CO2 levels above normal value."
+                attack_vectors.append(threat_vector)
+                attack_times.append(sensor.time_sensed)
+            
+            if len(attack_times)==2:
+                if abs(attack_times[0]-attack_times[1]) < 5*60:
+                print("ALERT! Possible buglar is inside office. Calling police now.")
+                print("Reasons for alert:")
+                print(attack_vector[0])
+                print(attack_vector[1])
 
 init_callback()
