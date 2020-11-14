@@ -48,6 +48,7 @@ def sensed_callback(msg):
         sensor.type,
         sensor.description,
         sensor.value))
+    power_use(sensor)
     buglar_alarm()
 
 def init_callback():
@@ -87,10 +88,10 @@ def buglar_alarm():
             
             if len(attack_times)==2:
                 if abs(attack_times[0]-attack_times[1]) < 5*60:
-                print("ALERT! Possible buglar is inside office. Calling police now.")
-                print("Reasons for alert:")
-                print(attack_vector[0])
-                print(attack_vector[1])
+                    print("ALERT! Possible buglar is inside office. Calling police now.")
+                    print("Reasons for alert:")
+                    print(attack_vector[0])
+                    print(attack_vector[1])
 
 # power use of electronics
 def power_use(sensor):
