@@ -10,6 +10,11 @@ import time
 
 Sensor = namedtuple('Sensor',['type','description','time_sensed','value'])
 
+# power used by indivdual things [monitor, desktop, mac charger, printer]
+power_usage = [0,0,0,0]
+# total power usage of all 4 combined
+total_power = 0
+
 # Room 241 = Brad Campbell's Office
 devices = {"c098e5700148":Sensor('power','monitor',0.0,0.0),
         "c098e5700149":Sensor('power','desktop',0.0,0.0),
@@ -46,9 +51,40 @@ def sensed_callback(msg):
         sensor.description,
         sensor.value))
 
+    power_use(sensor)
+
 def init_callback():
     for sensor_id in devices:
         oracle.receive(sensor_id,sensed_callback)
+
+
+# power use of electronics
+def power_use(sensor):
+    global power_usage
+    global total_power
+    # add on amount of power for each componenet individually
+    if sensor.type == 'power':
+        if sensor.description == 'monitor':
+            power_usage[0] += float(sensor.value)
+        elif sensor.description == 'desktop':
+            power_usage[1] += float(sensor.value)
+        elif sensor.description == 'mac charger':
+            power_usage[2] += float(sensor.value)
+        elif sensor.description == 'print':
+            power_usage[3] += float(sensor.value)
+    # total power usage
+    total_power = sum(power_usage)
+    # percentages for each component
+    monitor_power = 100 * (power_usage[0] / total_power)
+    desktop_power = 100 * (power_usage[1] / total_power)
+    charger_power = 100 * (power_usage[2] / total_power)
+    print_power = 100 * (power_usage[3] / total_power)
+    # print output
+    print("power usage breakdown:{:.2f}% monitor, {:.2f}% desktop {:.2f}% mac charger {:.2f}% printer".format(monitor_power,
+                                                                                              desktop_power,
+                                                                                              charger_power,
+                                                                                              print_power))
+
 
 init_callback()
 
