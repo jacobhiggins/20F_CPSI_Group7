@@ -9,7 +9,7 @@ import time
 HOUR_START = 17 # Alarm armed at 5 p.m.
 HOUR_STOP = 7 # Alarm unarmed at 7 a.m.
 NORMAL_NIGHT_TEMP = 19
-NORMAL_NIGHT_CO2 = 
+NORMAL_NIGHT_CO2 = 60
 
 Sensor = namedtuple('Sensor',['type','description','time_sensed','value'])
 
@@ -91,5 +91,32 @@ def buglar_alarm():
                 print("Reasons for alert:")
                 print(attack_vector[0])
                 print(attack_vector[1])
+
+# power use of electronics
+def power_use(sensor):
+    global power_usage
+    global total_power
+    # add on amount of power for each componenet individually
+    if sensor.type == 'power':
+        if sensor.description == 'monitor':
+            power_usage[0] += float(sensor.value)
+        elif sensor.description == 'desktop':
+            power_usage[1] += float(sensor.value)
+        elif sensor.description == 'mac charger':
+            power_usage[2] += float(sensor.value)
+        elif sensor.description == 'print':
+            power_usage[3] += float(sensor.value)
+    # total power usage
+    total_power = sum(power_usage)
+    # percentages for each component
+    monitor_power = 100 * (power_usage[0] / total_power)
+    desktop_power = 100 * (power_usage[1] / total_power)
+    charger_power = 100 * (power_usage[2] / total_power)
+    print_power = 100 * (power_usage[3] / total_power)
+    # print output
+    print("power usage breakdown:{:.2f}% monitor, {:.2f}% desktop {:.2f}% mac charger {:.2f}% printer".format(monitor_power,
+                                                                                              desktop_power,
+                                                                                              charger_power,
+                                                                                              print_power))
 
 init_callback()
