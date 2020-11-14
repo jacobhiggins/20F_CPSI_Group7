@@ -1,4 +1,19 @@
+# Group 7
+# Assignment B
+# Authors: Jacob Higgins, Michael Jeong, Robin Kim, Spencer Stebbins
 
+# Description: Proof of conception for personalized room data tracking app.
+# Coded are two functionalities: power consumption tracker and burglar alarm
+# The room used is Olsson 241 (Professor Cambell's Office) since it has the most devices in it.
+
+# Burglar alarm: User can set times alarm is armed/unarmed. During this time,
+# the program looks for different attack vectors including:
+#  - Open door or window (contact sensor)
+#  - Temperature/CO2 above certain levels
+#  - Motion sensor
+# If any two of these are triggered, then the user is notified and the police are called (not really).
+
+# Power consumption: A user can track his/her power usage and compare power usage between devices.
 
 from oracle.oracle import Oracle
 oracle = Oracle()
@@ -8,8 +23,8 @@ import time
 
 HOUR_START = 17 # Alarm armed at 5 p.m.
 HOUR_STOP = 7 # Alarm unarmed at 7 a.m.
-NORMAL_NIGHT_TEMP = 19
-NORMAL_NIGHT_CO2 = 60
+NORMAL_NIGHT_TEMP = 25 # Temperature above which a person is present at night
+NORMAL_NIGHT_CO2 = 670 # CO2 level above which a person can be detected
 
 Sensor = namedtuple('Sensor',['type','description','time_sensed','value'])
 
@@ -17,6 +32,7 @@ Sensor = namedtuple('Sensor',['type','description','time_sensed','value'])
 power_usage = [0,0,0,0]
 # total power usage of all 4 combined
 total_power = 0
+last_power_time = 0
 
 # Room 241 = Brad Campbell's Office
 devices = {"c098e5700148":Sensor('power','monitor',0.0,0.0),
@@ -27,8 +43,8 @@ devices = {"c098e5700148":Sensor('power','monitor',0.0,0.0),
         "050d69ce":Sensor('motion','on ceiling',0.0,0.0),
         "018984f9":Sensor('CO2','north wall',0.0,0.0),
         "018a33c5":Sensor('temp','near door',0.0,0.0),
-        "01814dd0":Sensor('contact','on door',0.0,0.0),
-        "018342dc":Sensor('contact','on window',0.0,0.0)}
+        "01814dd0":Sensor('contact','on door',0.0,-1.0),
+        "018342dc":Sensor('contact','on window',0.0,-1.0)}
 
 def sensed_callback(msg):
     sensor_id = msg['device_id']
@@ -62,9 +78,9 @@ def init_callback():
 
 def buglar_alarm():
     local_time = time.localtime(time.time())
-    hour = local_time.hour
+    hour = local_time.tm_hour
     # If within time that the alarm is armed
-    if hour < HOUR_END or hour > HOUR_START:
+    if hour < HOUR_STOP or hour > HOUR_START:
         attack_vectors = []
         attack_times = []
         # Check if motion is detected
@@ -85,7 +101,7 @@ def buglar_alarm():
                 threat_vector = "Contact was released for sensor {}.".format(sensor.description)
                 attack_vectors.append(threat_vector)
                 attack_times.append(sensor.time_sensed)
-            elif sensor.type=='CO2' and sensor_value > NORMAL_NIGHT_CO2:
+            elif sensor.type=='CO2' and sensor.value > NORMAL_NIGHT_CO2:
                 alert = True
                 threat_vector = "CO2 levels above normal value."
                 attack_vectors.append(threat_vector)
@@ -95,13 +111,14 @@ def buglar_alarm():
                 if abs(attack_times[0]-attack_times[1]) < 5*60:
                     print("ALERT! Possible buglar is inside office. Calling police now.")
                     print("Reasons for alert:")
-                    print(attack_vector[0])
-                    print(attack_vector[1])
+                    print(attack_vectors[0])
+                    print(attack_vectors[1])
 
 # power use of electronics
 def power_use(sensor):
     global power_usage
     global total_power
+    global last_power_time
     # add on amount of power for each componenet individually
     if sensor.type == 'power':
         if sensor.description == 'monitor':
@@ -120,9 +137,11 @@ def power_use(sensor):
     charger_power = 100 * (power_usage[2] / total_power)
     print_power = 100 * (power_usage[3] / total_power)
     # print output
-    print("power usage breakdown:{:.2f}% monitor, {:.2f}% desktop {:.2f}% mac charger {:.2f}% printer".format(monitor_power,
+    if (time.time() - last_power_time) > 5*60:
+        print("power usage breakdown:{:.2f}% monitor | {:.2f}% desktop | {:.2f}% mac charger | {:.2f}% printer".format(monitor_power,
                                                                                               desktop_power,
                                                                                               charger_power,
                                                                                               print_power))
+        last_power_time = time.time()
 
 init_callback()

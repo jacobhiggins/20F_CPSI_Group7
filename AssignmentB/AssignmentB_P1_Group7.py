@@ -1,3 +1,7 @@
+# Group 7
+# Assignment B
+# Authors: Jacob Higgins, Michael Jeong, Robin Kim, Spencer Stebbins
+
 from oracle.oracle import Oracle
 oracle = Oracle()
 import numpy as np
@@ -41,9 +45,9 @@ def doorCallback(msg):
     time_motion_sensed = rooms[room_name][0]
     value_motion_sensed = rooms[room_name][1]
     if (t - time_motion_sensed) < recent_time and abs(value_motion_sensed-1)<0.001:
-        print("Motion recently detected!")
+        print("Motion recently detected in {}!".format(room_name))
     else:
-        print("Motion NOT recently detected")
+        print("Motion NOT recently detected in {}.".format(room_name))
 
 def motionCallback(msg):
     sensor_id = msg['device_id']
