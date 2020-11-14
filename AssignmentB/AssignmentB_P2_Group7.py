@@ -46,6 +46,7 @@ def sensed_callback(msg):
         sensor.type,
         sensor.description,
         sensor.value))
+    buglar_alarm()
 
 def init_callback():
     for sensor_id in devices:
@@ -54,7 +55,7 @@ def init_callback():
 def buglar_alarm():
     local_time = time.localtime(time.time())
     hour = local_time.hour
-    # If within time that the 
+    # If within time that the alarm is armed
     if hour < HOUR_END or hour > HOUR_START:
         attack_vectors = []
         attack_times = []
